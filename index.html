@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#ffffff">
 
-    <title>ฟีดข่าวสมัครงานครู</title>
+    <title>ฟีดข่าวสมัครงานครู (AI) v5 - Q&A</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -89,6 +89,8 @@
         }
         .nav-item.active { color: #0284c7; background-color: #f0f9ff; }
         #nav-chat.active { color: #7c3aed; background-color: #f5f3ff; }
+        /* [FIX] Added calculator tab style */
+        #nav-calculator.active { color: #0d9488; background-color: #f0fdfa; } /* teal-700, teal-50 */
         #nav-settings.active { color: #52525b; background-color: #f4f4f5; }
         .nav-item i { font-size: 16px; line-height: 1; }
         
@@ -112,6 +114,84 @@
         .btn-primary { background-color: #0ea5e9; color: white; }
         .btn-primary:hover { background-color: #0284c7; }
         .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* [FIX] New styles for Calculator Results */
+        .calc-result-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        .calc-result-box {
+            background-color: #f8fafc; /* slate-50 */
+            border: 1px solid #f1f5f9; /* slate-100 */
+            padding: 1rem;
+            border-radius: 12px;
+        }
+        .calc-result-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #475569; /* slate-600 */
+            margin-bottom: 8px;
+        }
+        .calc-result-value {
+            font-size: 1.5rem; /* 24px */
+            font-weight: 700;
+            color: #0d9488; /* teal-600 */
+            line-height: 1.2;
+        }
+        .calc-result-value .unit {
+            font-size: 1rem; /* 16px */
+            font-weight: 500;
+            color: #334155; /* slate-700 */
+        }
+        .calc-result-subvalue {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1e293b; /* slate-800 */
+            margin-top: 4px;
+        }
+
+        /* [FIX] New Modal Styles */
+        #calc-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 99;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            animation: fadeIn 0.3s ease-out;
+        }
+        #calc-modal-content {
+            background-color: white;
+            border-radius: 1.5rem; /* 24px */
+            padding: 1.5rem; /* 24px */
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        #calc-modal-close-btn {
+            background-color: #f1f5f9; /* slate-100 */
+            color: #64748b; /* slate-500 */
+            border-radius: 99px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        #calc-modal-close-btn:hover {
+            background-color: #e2e8f0; /* slate-200 */
+            transform: rotate(90deg);
+        }
 
         /* --- [v5] Feed View Styles --- */
         #view-feed { background-color: #f1f5f9; }
@@ -410,8 +490,9 @@
                 </div>
             </section>
             
+            <!-- [FIX] RE-ADDED MISSING HTML SECTION -->
             <!-- [v5] View 2: Chat -->
-            <section id="view-chat">
+            <section id="view-chat" class="hidden">
                 <div id="chat-message-container" class="no-scrollbar">
                     <!-- JS populates this -->
                 </div>
@@ -427,6 +508,7 @@
                 </div>
             </section>
             
+            <!-- [FIX] RE-ADDED MISSING HTML SECTION -->
             <!-- [v5] View 3: Settings -->
             <section id="view-settings" class="hidden p-6 space-y-6 bg-slate-100 h-full">
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
@@ -449,6 +531,41 @@
                     </div>
                 </div>
             </section>
+
+            <!-- [FIX v5.11] View 4: Calculator (AI Only Redesign) -->
+            <section id="view-calculator" class="hidden p-6 h-full flex flex-col items-center justify-center bg-slate-50">
+                
+                <div class="w-full max-w-md bg-white p-6 md:p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-white ring-1 ring-slate-100 text-center relative overflow-hidden">
+                    
+                    <!-- Decoration -->
+                    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-teal-400 to-brand-500"></div>
+
+                    <div class="w-16 h-16 bg-teal-50 rounded-2xl flex items-center justify-center mx-auto mb-5 text-teal-500 shadow-sm border border-teal-100 rotate-3">
+                         <i class="fa-solid fa-wand-magic-sparkles text-2xl"></i>
+                    </div>
+                    
+                    <h3 class="text-xl font-bold text-slate-800 mb-2">คำนวณอายุราชการ AI</h3>
+                    <p class="text-slate-500 text-sm mb-6 leading-relaxed">
+                        ไม่ต้องกรอกฟอร์มวันที่ให้ยุ่งยาก<br>
+                        เพียงพิมพ์ <strong>"วันเกิด"</strong> และ <strong>"วันบรรจุ"</strong> ของคุณ<br>
+                        แล้วให้ AI จัดการที่เหลือเองครับ
+                    </p>
+
+                    <div class="relative group text-left">
+                        <textarea id="ai-profile-input" class="form-input !text-base !p-4 !min-h-[140px] bg-slate-50 border-2 border-dashed border-slate-200 focus:border-teal-500 focus:bg-white transition-all resize-none rounded-2xl leading-relaxed" placeholder="ตัวอย่าง:&#10;ฉันเกิดวันที่ 14 กุมภาพันธ์ 2535&#10;เริ่มรับราชการครู 1 ตุลาคม 2560"></textarea>
+                        <div class="absolute bottom-4 right-4 text-slate-300 pointer-events-none group-focus-within:text-teal-400 transition-colors">
+                            <i class="fa-solid fa-keyboard text-lg"></i>
+                        </div>
+                    </div>
+
+                    <button id="ai-profile-btn" class="btn w-full !bg-teal-600 hover:!bg-teal-700 !mt-6 !py-3.5 !text-base !rounded-2xl shadow-lg shadow-teal-200/50 transform active:scale-[0.98] transition-all">
+                        <i id="ai-profile-icon" class="fa-solid fa-bolt mr-2"></i> คำนวณทันที
+                    </button>
+                    
+                    <p id="ai-profile-message" class="text-xs mt-4 hidden font-medium"></p>
+                </div>
+
+            </section>
             
         </div>
         
@@ -462,11 +579,37 @@
                 <i class="fa-solid fa-wand-magic-sparkles"></i>
                 <span>ผู้ช่วย AI</span>
             </div>
+            <!-- [FIX] Added Calculator Nav Item -->
+            <div id="nav-calculator" class="nav-item">
+                <i class="fa-solid fa-calculator"></i>
+                <span>คำนวณ</span>
+            </div>
             <div id="nav-settings" class="nav-item">
                 <i class="fa-solid fa-sliders"></i>
                 <span>ตั้งค่า</span>
             </div>
         </nav>
+
+        <!-- [FIX] New Calculation Result Modal -->
+        <!-- [FIX v5.10] Start hidden using inline style for robustness -->
+        <div id="calc-modal-backdrop" style="display: none;">
+            <div id="calc-modal-content" class="relative">
+                <div id="calc-modal-close-btn">
+                    <i class="fa-solid fa-xmark"></i>
+                </div>
+                
+                <h3 class="text-xl font-bold text-teal-600 mb-4 text-center">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    ผลลัพธ์การคำนวณ
+                </h3>
+                
+                <!-- Container for results -->
+                <div id="modal-result-container" class="calc-result-grid">
+                    <!-- JS will populate this -->
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <script type="module">
@@ -488,13 +631,15 @@
             views: {
                 feed: document.getElementById('view-feed'),
                 chat: document.getElementById('view-chat'),
-                settings: document.getElementById('view-settings')
+                settings: document.getElementById('view-settings'),
+                calculator: document.getElementById('view-calculator') // [FIX] Added
             },
             // [v5] Nav
             nav: {
                 feed: document.getElementById('nav-feed'),
                 chat: document.getElementById('nav-chat'),
-                settings: document.getElementById('nav-settings')
+                settings: document.getElementById('nav-settings'),
+                calculator: document.getElementById('nav-calculator') // [FIX] Added
             },
             // [v5] Header
             headerSubtitle: document.getElementById('header-subtitle'),
@@ -532,6 +677,19 @@
             chatInput: document.getElementById('chat-input'),
             chatSendBtn: document.getElementById('chat-send-btn'),
             chatSendIcon: document.getElementById('chat-send-icon'),
+            
+            // [FIX v5.11] Calculator View (AI Only)
+            // Removed old form DOMs to prevent null errors
+            aiProfileInput: document.getElementById('ai-profile-input'),
+            aiProfileBtn: document.getElementById('ai-profile-btn'),
+            aiProfileIcon: document.getElementById('ai-profile-icon'),
+            aiProfileMessage: document.getElementById('ai-profile-message'),
+
+            // [FIX] New Modal DOMs
+            calcModalBackdrop: document.getElementById('calc-modal-backdrop'),
+            calcModalContent: document.getElementById('calc-modal-content'),
+            modalCloseBtn: document.getElementById('calc-modal-close-btn'),
+            modalResultContainer: document.getElementById('modal-result-container'),
         };
 
         // --- INITIALIZATION ---
@@ -546,6 +704,7 @@
             dom.nav.feed.addEventListener('click', () => switchView('view-feed'));
             dom.nav.chat.addEventListener('click', () => switchView('view-chat'));
             dom.nav.settings.addEventListener('click', () => switchView('view-settings'));
+            dom.nav.calculator.addEventListener('click', () => switchView('view-calculator')); // [FIX] Added
             
             dom.chatInput.addEventListener('input', () => {
                 dom.chatInput.style.height = 'auto'; 
@@ -557,6 +716,21 @@
                     dom.chatForm.dispatchEvent(new Event('submit', { cancelable: true }));
                 }
             });
+            
+            // [FIX v5.11] Updated Calculator Listeners
+            dom.aiProfileBtn.addEventListener('click', handleAiProfileExtract); 
+            // Removed old manual listeners: calcForm, saveProfileBtn, calcToPresent
+            
+            // [FIX] Add modal close listeners
+            dom.modalCloseBtn.addEventListener('click', hideCalcModal);
+            dom.calcModalBackdrop.addEventListener('click', (e) => {
+                if (e.target === dom.calcModalBackdrop) {
+                    hideCalcModal();
+                }
+            });
+
+            // [FIX v5.11] Load profile only for display placeholder if needed (Optional)
+            loadCalculatorProfile();
             
             // [v5] Load chat history
             loadChatHistory();
@@ -576,6 +750,9 @@
 
         // --- [v5] NAVIGATION ---
         function switchView(viewId) {
+            // [FIX v5.9 & v5.10] Hide modal on any tab switch
+            hideCalcModal(); 
+
             state.currentView = viewId;
 
             // Hide all views
@@ -615,6 +792,12 @@
                     iconClass = "fa-solid fa-wand-magic-sparkles";
                     bgColor = "bg-ai-100";
                     textColor = "text-ai-600";
+                    break;
+                case 'view-calculator': // [FIX] Added
+                    subtitle = "คำนวณอายุราชการ";
+                    iconClass = "fa-solid fa-calculator";
+                    bgColor = "bg-teal-100";
+                    textColor = "text-teal-700";
                     break;
                 case 'view-settings':
                     subtitle = "ตั้งค่า API Key";
@@ -1092,6 +1275,289 @@
             }
         }
         
+        // --- [FIX] CORE: CALCULATOR LOGIC (Redesigned) ---
+
+        // [FIX] New: Use AI to extract dates from natural language
+        async function handleAiProfileExtract() {
+            const inputText = dom.aiProfileInput.value.trim();
+            if (!inputText) {
+                showAiProfileMessage("กรุณาพิมพ์ข้อมูลวันเกิดและวันบรรจุก่อนนะครับ", 'error');
+                return;
+            }
+
+            if (!state.apiKey) {
+                showAiProfileMessage("กรุณาตั้งค่า API Key ก่อนใช้งาน", 'error');
+                // Optional: auto redirect
+                setTimeout(() => switchView('view-settings'), 1500);
+                return;
+            }
+
+            // Show loading
+            dom.aiProfileBtn.disabled = true;
+            dom.aiProfileIcon.className = "fa-solid fa-spinner fa-spin mr-2";
+            showAiProfileMessage("กำลังอ่านข้อมูลของคุณ...", 'loading');
+
+            const systemPrompt = `
+คุณคือ AI ผู้ช่วยกรอกฟอร์ม
+หน้าที่ของคุณคือ:
+1.  วิเคราะห์ข้อความที่ผู้ใช้ป้อน (เช่น: "เกิด 15 พ.ค. 2530 บรรจุ 1 ต.ค. 58")
+2.  ดึงข้อมูล 'วันเกิด' (birthDate) และ 'วันที่เริ่มบรรจุ' (startDate) ออกมา
+3.  **สำคัญมาก:** คุณต้องแปลงวันที่ พ.ศ. ให้เป็น ค.ศ. (YYYY-MM-DD) เสมอ
+    (ตัวอย่าง: 15 พ.ค. 2530 -> "1987-05-15")
+    (ตัวอย่าง: 1 ต.ค. 58 -> "2015-10-01")
+4.  ตอบกลับเป็น JSON ที่ตรงตาม Schema ที่กำหนดเท่านั้น ห้ามมีข้อความอื่น
+`;
+
+            const payload = {
+                contents: [{ parts: [{ text: inputText }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            "birthDate": { 
+                                "type": "STRING",
+                                "description": "วันเกิดในรูปแบบ YYYY-MM-DD (ค.ศ.)"
+                            },
+                            "startDate": { 
+                                "type": "STRING",
+                                "description": "วันที่เริ่มบรรจุในรูปแบบ YYYY-MM-DD (ค.ศ.)"
+                            }
+                        },
+                        required: ["birthDate", "startDate"]
+                    }
+                }
+            };
+            
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${state.apiKey}`;
+
+            try {
+                const response = await fetchWithBackoff(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.json();
+                    throw new Error(errorBody.error?.message || `HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const part = result.candidates?.[0]?.content?.parts?.[0];
+
+                if (!part || !part.text) {
+                    throw new Error("AI ไม่ได้ส่งข้อมูล JSON กลับมา");
+                }
+
+                const parsedJson = JSON.parse(part.text);
+
+                if (parsedJson.birthDate && parsedJson.startDate) {
+                    // 1. Auto-Save Profile
+                    saveProfileInternal(parsedJson.birthDate, parsedJson.startDate);
+                    
+                    // 2. Calculate result to "Present" immediately
+                    const presentDate = formatDateISO(new Date());
+                    const resultHtml = calculateAndFormatResults(
+                        parsedJson.birthDate,
+                        parsedJson.startDate,
+                        presentDate
+                    );
+
+                    if (resultHtml.includes("Error:")) {
+                        showAiProfileMessage(resultHtml.replace("Error: ", ""), 'error');
+                    } else {
+                        // 3. Show result in Modal
+                        showCalcModal(resultHtml);
+                        showAiProfileMessage("คำนวณเรียบร้อยครับ!", 'success');
+                    }
+
+                } else {
+                    throw new Error("AI ไม่สามารถดึงข้อมูลวันที่ได้ครบถ้วน");
+                }
+
+            } catch (error) {
+                console.error("AI Profile Error:", error);
+                showAiProfileMessage(`เกิดข้อผิดพลาด: ${error.message}`, 'error');
+            } finally {
+                // Reset button
+                dom.aiProfileBtn.disabled = false;
+                dom.aiProfileIcon.className = "fa-solid fa-bolt mr-2";
+            }
+        }
+
+        // [FIX] New: Helper for AI profile messages
+        function showAiProfileMessage(message, type = 'loading') {
+            dom.aiProfileMessage.textContent = message;
+            if (type === 'error') {
+                dom.aiProfileMessage.className = 'text-xs mt-4 text-center text-red-600 animate-fade-in';
+            } else if (type === 'success') {
+                dom.aiProfileMessage.className = 'text-xs mt-4 text-center text-green-600 animate-fade-in';
+            } else {
+                dom.aiProfileMessage.className = 'text-xs mt-4 text-center text-slate-500 animate-fade-in';
+            }
+            dom.aiProfileMessage.classList.remove('hidden');
+
+            // Hide message after 4 seconds (if not loading)
+            if (type !== 'loading') {
+                setTimeout(() => {
+                    dom.aiProfileMessage.classList.add('hidden');
+                }, 4000);
+            }
+        }
+
+        function formatDateISO(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        // [FIX v5.11] Load profile to pre-fill placeholder or state (Optional UX)
+        function loadCalculatorProfile() {
+            try {
+                const profileData = localStorage.getItem('teacher_calc_profile_v5');
+                if (profileData) {
+                    const profile = JSON.parse(profileData);
+                    // We could pre-fill the textarea here if we wanted, 
+                    // or just keep it empty for a clean look. 
+                    // For now, let's keep it clean.
+                }
+            } catch (e) {
+                console.error("Error loading calculator profile:", e);
+            }
+        }
+
+        // [FIX v5.11] Internal function to save profile without UI buttons
+        function saveProfileInternal(birthDate, startDate) {
+            const profile = { birthDate, startDate };
+            try {
+                localStorage.setItem('teacher_calc_profile_v5', JSON.stringify(profile));
+            } catch (e) {
+                console.error("Error saving profile:", e);
+            }
+        }
+        
+        // [FIX v5.11] Removed unused handleCalculation, handleSaveProfile, togglePresentDate
+
+        function showCalcError(message) {
+            dom.calcResultError.textContent = message;
+            dom.calcResultError.classList.remove('hidden');
+            dom.calcResult.classList.remove('hidden');
+        }
+
+        // [FIX v5.10] Updated to use style.display for robustness
+        function showCalcModal(resultHtml) {
+            dom.modalResultContainer.innerHTML = resultHtml;
+            dom.calcModalBackdrop.style.display = 'flex';
+        }
+
+        // [FIX v5.10] Updated to use style.display for robustness
+        function hideCalcModal() {
+            dom.calcModalBackdrop.style.display = 'none';
+            dom.modalResultContainer.innerHTML = ''; // Clear content
+        }
+
+        // [FIX] New function to display all results (Returns HTML)
+        function calculateAndFormatResults(birthDateStr, startDateStr, endDateStr) {
+            const birth = new Date(birthDateStr);
+            const start = new Date(startDateStr);
+            const end = new Date(endDateStr);
+            
+            // [FIX] Added validation inside this function
+            if (isNaN(start.getTime()) || isNaN(end.getTime()) || isNaN(birth.getTime())) {
+                return "Error: วันที่ในโปรไฟล์ไม่ถูกต้อง";
+            }
+            if (end < start) {
+                return "Error: วันที่คำนวณต้องมากกว่าวันที่เริ่มบรรจุ";
+            }
+            if (end < birth) {
+                return "Error: วันที่คำนวณต้องมากกว่าวันเกิด";
+            }
+            if (start < birth) {
+                return "Error: วันที่เริ่มบรรจุต้องมากกว่าวันเกิด";
+            }
+
+            const thLocale = 'th-TH';
+            const dateOptions = { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/Bangkok' };
+
+            // 1. Service Age
+            const service = calculateServiceAge(start, end);
+
+            // 2. Current Age
+            const age = calculateServiceAge(birth, end);
+
+            // 3. Retirement Date
+            const retirementDate = new Date(birth.getFullYear() + 60, birth.getMonth(), birth.getDate());
+
+            // 4. Time to Retirement
+            let timeToRetire = null;
+            let alreadyRetired = false;
+            if (end >= retirementDate) {
+                alreadyRetired = true;
+            } else {
+                timeToRetire = calculateServiceAge(end, retirementDate);
+            }
+
+            // --- Format HTML ---
+            const formatDiff = (diff) => {
+                if (!diff) return "-";
+                return `${diff.years} <span class="unit">ปี</span> ${diff.months} <span class="unit">เดือน</span> ${diff.days} <span class="unit">วัน</span>`;
+            };
+
+            const retireTimeHtml = alreadyRetired
+                ? `<p class="calc-result-value text-blue-600">คุณเกษียณอายุแล้ว</p>`
+                : `<p class="calc-result-value text-teal-700">${formatDiff(timeToRetire)}</p>`;
+            
+            return `
+                <!-- Box 1: Service Age -->
+                <div class="calc-result-box">
+                    <h4 class="calc-result-title">อายุราชการ (ณ วันที่คำนวณ)</h4>
+                    <p class="calc-result-value">${formatDiff(service)}</p>
+                </div>
+                <!-- Box 2: Retirement Info -->
+                <div class="calc-result-box">
+                    <h4 class="calc-result-title">ข้อมูลการเกษียณ</h4>
+                    <p class="calc-result-value">${formatDiff(age)}</p>
+                    <p class="calc-result-subvalue">อายุ (ณ วันที่คำนวณ)</p>
+                    <p class="calc-result-subvalue mt-3">วันที่เกษียณอายุ (60 ปี): ${retirementDate.toLocaleDateString(thLocale, dateOptions)}</p>
+                </div>
+                <!-- Box 3: Time to Retirement -->
+                <div class="calc-result-box !bg-teal-50 !border-teal-100">
+                    <h4 class="calc-result-title">เหลือเวลาจนถึงวันเกษียณ</h4>
+                    ${retireTimeHtml}
+                </div>
+            `;
+        }
+
+        // [FIX] Old display function removed (logic moved)
+        // function showCalcResult(...) { ... }
+
+        function calculateServiceAge(startDate, endDate) {
+            let years = endDate.getFullYear() - startDate.getFullYear();
+            let months = endDate.getMonth() - startDate.getMonth();
+            let days = endDate.getDate() - startDate.getDate();
+
+            // Adjust for negative days
+            if (days < 0) {
+                months--;
+                // Get days in the *previous* month of the end date
+                let daysInLastMonth = new Date(endDate.getFullYear(), endDate.getMonth(), 0).getDate();
+                days += daysInLastMonth;
+            }
+
+            // Adjust for negative months
+            if (months < 0) {
+                years--;
+                months += 12;
+            }
+            
+            // Handle edge case where start and end are same day
+            if (years < 0) years = 0;
+            if (months < 0) months = 0;
+            if (days < 0) days = 0;
+
+            return { years, months, days };
+        }
+
         // --- [v5] CHAT RENDERING ---
         
         function loadChatHistory() {
