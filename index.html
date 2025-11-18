@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#ffffff">
 
-    <title>ฟีดข่าวสมัครงานครู (AI) v5 - Q&A</title>
+    <title>ฟีดข่าวสมัครงานครู</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -238,6 +238,29 @@
         }
         .chat-source-item:hover { text-decoration: underline; }
 
+        /* [FIX] New Styles for Edu News */
+        .edu-news-item {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #334155; /* slate-700 */
+            text-decoration: none;
+            padding: 10px 12px;
+            border-radius: 12px;
+            background-color: #f8fafc; /* slate-50 */
+            border: 1px solid #f1f5f9; /* slate-100 */
+            transition: all 0.2s;
+            line-height: 1.5;
+        }
+        .edu-news-item:hover {
+            background-color: #f1f5f9; /* slate-100 */
+            color: #0369a1; /* brand-700 */
+        }
+        .edu-news-item i {
+            margin-right: 6px;
+            color: #64748b; /* slate-500 */
+        }
+
         #chat-form-container {
             background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 16px;
             padding-bottom: calc(env(safe-area-inset-bottom, 0) + 16px);
@@ -291,6 +314,38 @@
             
             <!-- [v5] View 1: Feed -->
             <section id="view-feed" class="p-4 pt-6 md:p-6">
+                
+                <!-- [FIX] New Section: Education News -->
+                <div class="px-2 md:px-0"> <!-- Match padding -->
+                    <h3 class="text-lg font-bold text-slate-700 mb-3 px-1">
+                        <i class="fa-solid fa-fire text-orange-500"></i> ข่าวการศึกษา
+                    </h3>
+                    
+                    <!-- 1. Edu News Loading -->
+                    <div id="edu-news-loading" class="animate-pulse space-y-3 mb-4">
+                        <div class="skeleton-line h-4 w-full"></div>
+                        <div class="skeleton-line h-4 w-5/6"></div>
+                    </div>
+                    
+                    <!-- 2. Edu News Error -->
+                    <div id="edu-news-error" class="hidden text-center text-red-600 p-4 mb-4 bg-red-50 rounded-lg">
+                        <p id="edu-news-error-text" class="text-sm">ไม่สามารถโหลดข่าวการศึกษาได้</p>
+                    </div>
+                    
+                    <!-- 3. Edu News Results -->
+                    <div id="edu-news-results" class="hidden mb-4 space-y-2">
+                        <!-- JS populates this -->
+                    </div>
+                </div>
+
+                <!-- Divider -->
+                <hr class="border-slate-200 mx-2 md:mx-0 my-6">
+
+                <!-- [FIX] New Section Header for Job Feed -->
+                <h3 class="text-lg font-bold text-slate-700 mb-3 px-3"> <!-- Match padding -->
+                    <i class="fa-solid fa-briefcase text-brand-500"></i> ฟีดประกาศรับสมัครงาน
+                </h3>
+
                 <!-- Smart Search (for feed) -->
                 <form id="feed-search-form" class="mb-4 mx-2">
                     <div class="relative">
@@ -311,7 +366,8 @@
 
                 <!-- 2. Loading State (Skeleton) -->
                 <div id="loading-container" class="hidden animate-fade-in mx-2">
-                    <h3 class="text-lg font-bold text-slate-700 mb-4 px-1">
+                    <!-- [FIX] Removed title, search bar is the title now -->
+                    <h3 class="text-base font-medium text-slate-500 mb-4 px-1">
                         <i class="fa-solid fa-spinner fa-spin text-brand-500"></i>
                         AI กำลังค้นหา: <span id="loading-query" class="text-brand-600">...</span>
                     </h3>
@@ -347,9 +403,7 @@
 
                 <!-- 4. Results -->
                 <div id="results-container" class="hidden animate-fade-in mx-2">
-                    <h3 class="text-lg font-bold text-slate-700 mb-4 px-1">
-                        ผลลัพธ์สำหรับ: "<span id="feed-title" class="text-brand-600"></span>"
-                    </h3>
+                    <!-- [FIX] Removed title, search query is visible in the box -->
                     <div id="results-list">
                         <!-- JS populates this -->
                     </div>
@@ -423,6 +477,7 @@
         let state = {
             apiKey: '',
             isLoadingFeed: false,
+            isLoadingEduNews: false, // [FIX] Added
             isLoadingChat: false,
             currentView: 'view-feed',
             chatHistory: []
@@ -451,6 +506,12 @@
             saveKeyBtn: document.getElementById('save-key-btn'),
             settingsMessage: document.getElementById('settings-message'), // [FIX] Added
             
+            // [FIX] New Edu News Elements
+            eduNewsLoading: document.getElementById('edu-news-loading'),
+            eduNewsError: document.getElementById('edu-news-error'),
+            eduNewsErrorText: document.getElementById('edu-news-error-text'),
+            eduNewsResults: document.getElementById('edu-news-results'),
+
             // [v5] Feed View
             feedSearchForm: document.getElementById('feed-search-form'),
             feedSearchInput: document.getElementById('feed-search-input'),
@@ -462,7 +523,7 @@
             errorContainer: document.getElementById('error-container'),
             errorText: document.getElementById('error-text'),
             resultsContainer: document.getElementById('results-container'),
-            feedTitle: document.getElementById('feed-title'),
+            // feedTitle: document.getElementById('feed-title'), // [FIX] Removed
             resultsList: document.getElementById('results-list'),
             
             // [v5] Chat View
@@ -504,7 +565,9 @@
             // [v5] Check API Key and run auto-feed
             if (state.apiKey) {
                 switchView('view-feed');
-                runJobFeedSearch(DEFAULT_QUERY);
+                // [FIX] Call both functions on load
+                runEducationNewsSearch(); // Call for edu news
+                runJobFeedSearch(DEFAULT_QUERY); // Call for job feed
             } else {
                 // Force user to settings if no key
                 switchView('view-settings');
@@ -608,6 +671,8 @@
                 // Only switch if we are still on settings page
                 if (state.currentView === 'view-settings') {
                     switchView('view-feed');
+                    // [FIX] Call both functions on save
+                    runEducationNewsSearch(); 
                     runJobFeedSearch(DEFAULT_QUERY); 
                 }
             }, 1500);
@@ -690,7 +755,7 @@
             dom.apiKeyPrompt.classList.add('hidden');
             dom.errorContainer.classList.add('hidden');
 
-            dom.feedTitle.textContent = query;
+            // dom.feedTitle.textContent = query; // [FIX] Removed
             dom.resultsList.innerHTML = ''; 
 
             if (results.length === 0) {
@@ -745,6 +810,111 @@
             return card;
         }
 
+
+        // --- [FIX] CORE: EDUCATION NEWS SEARCH ---
+        
+        function showEduNewsLoading() {
+            state.isLoadingEduNews = true;
+            dom.eduNewsLoading.classList.remove('hidden');
+            dom.eduNewsError.classList.add('hidden');
+            dom.eduNewsResults.classList.add('hidden');
+        }
+
+        function showEduNewsError(message) {
+            state.isLoadingEduNews = false;
+            dom.eduNewsLoading.classList.add('hidden');
+            dom.eduNewsErrorText.textContent = message;
+            dom.eduNewsError.classList.remove('hidden');
+        }
+
+        function showEduNewsResults(results) {
+            state.isLoadingEduNews = false;
+            dom.eduNewsLoading.classList.add('hidden');
+            dom.eduNewsError.classList.add('hidden');
+            
+            dom.eduNewsResults.innerHTML = '';
+            if (results.length === 0) {
+                dom.eduNewsResults.innerHTML = `<p class="text-sm text-slate-500 px-2">ไม่พบข่าวการศึกษาในขณะนี้</p>`;
+            } else {
+                results.forEach(item => {
+                    const itemEl = document.createElement('a');
+                    itemEl.className = 'edu-news-item';
+                    itemEl.href = escapeHTML(item.url);
+                    itemEl.target = '_blank';
+                    itemEl.innerHTML = `<i class="fa-solid fa-newspaper fa-fw"></i> ${escapeHTML(item.title)}`;
+                    dom.eduNewsResults.appendChild(itemEl);
+                });
+            }
+            dom.eduNewsResults.classList.remove('hidden');
+        }
+
+        async function runEducationNewsSearch() {
+            if (state.isLoadingEduNews) return;
+            if (!state.apiKey) {
+                // [FIX] Hide loader if no key, don't show error
+                dom.eduNewsLoading.classList.add('hidden');
+                return; 
+            }
+
+            showEduNewsLoading();
+
+            const query = "ข่าวการศึกษาที่สำคัญล่าสุดในประเทศไทย";
+            const systemPrompt = `
+คุณคือ AI ผู้ช่วยค้นหาข่าว
+หน้าที่ของคุณคือ:
+1.  ใช้ Google Search เพื่อค้นหาข่าวตามคำค้นหา
+2.  **คัดเลือก** ข่าวที่สำคัญและเป็นที่สนใจ 3-5 รายการ
+3.  ตอบกลับเป็น **JSON Array String** ที่สมบูรณ์เท่านั้น
+4.  ผลลัพธ์ควรมีข้อมูล 'title' และ 'url'
+5.  หากไม่พบผลลัพธ์ ให้ตอบกลับเป็น Array ว่าง []
+6.  **ห้าม** มีข้อความอธิบายใดๆ ทั้งสิ้น และ **ห้าม** มี Markdown backticks (เช่น \`\`\`json ... \`\`\`)
+`;
+            
+            const payload = {
+                contents: [{ parts: [{ text: query }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                tools: [{ "google_search": {} }]
+            };
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${state.apiKey}`;
+
+            try {
+                const response = await fetchWithBackoff(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.json();
+                    throw new Error(errorBody.error?.message || `HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const aiResponseText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                if (!aiResponseText) {
+                    throw new Error("AI ไม่ได้ส่งข้อมูลกลับมา");
+                }
+
+                const cleanJsonString = aiResponseText.replace(/```json/g, '').replace(/```/g, '').trim();
+                
+                if (!cleanJsonString.startsWith('[')) {
+                    throw new Error("AI ตอบกลับในรูปแบบที่ผิดพลาด");
+                }
+                
+                const searchResults = JSON.parse(cleanJsonString);
+                showEduNewsResults(searchResults);
+
+            } catch (error) {
+                console.error("Edu News Error:", error);
+                let friendlyMessage = `การค้นหาล้มเหลว: ${error.message}`;
+                if (error.message.includes("API key not valid")) {
+                    friendlyMessage = "API Key ไม่ถูกต้อง";
+                }
+                showEduNewsError(friendlyMessage);
+            }
+        }
 
         // --- [v5] CORE: AI JOB FEED SEARCH (v4 logic) ---
         async function runJobFeedSearch(query) {
