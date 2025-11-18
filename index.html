@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#ffffff">
+
+    <title>ฟีดข่าวสมัครงานครู (AI) v5 - Q&A</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Sarabun', 'sans-serif'] },
+                    colors: { 
+                        brand: { 
+                            50: '#f0f9ff', 100: '#e0f2fe', 200: '#bae6fd',
+                            500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1' 
+                        },
+                        ai: { 
+                            50: '#f5f3ff', 100: '#ede9fe', 
+                            500: '#8b5cf6', 600: '#7c3aed' 
+                        }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'slide-up': 'slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+                        'pulse-dot': 'pulseDot 1.4s infinite ease-in-out both', 
+                    },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { 
+                            '0%': { transform: 'translateY(20px)', opacity: '0' }, 
+                            '100%': { transform: 'translateY(0)', opacity: '1' } 
+                        },
+                        pulseDot: {
+                            '0%, 80%, 100%': { transform: 'scale(0)', opacity: 0.5 },
+                            '40%': { transform: 'scale(1.0)', opacity: 1 }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { 
+            -webkit-tap-highlight-color: transparent; 
+            background-color: #f1f5f9; /* slate-100 */
+            height: 100dvh; width: 100vw; 
+            overflow: hidden; display: flex; align-items: center; justify-content: center; 
+            font-family: 'Sarabun', sans-serif; 
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        #app-shell { 
+            width: 100%; height: 100%; 
+            background: #ffffff;
+            position: relative; overflow: hidden; 
+            display: flex; flex-direction: column; 
+        }
+        @media (min-width: 768px) { 
+            #app-shell { 
+                max-width: 450px; height: 850px; max-height: 90dvh; border-radius: 40px; 
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3); 
+                border: 4px solid #e2e8f0;
+            } 
+        }
+        
+        /* --- [v5] New Bottom Nav --- */
+        .bottom-nav {
+            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(12px); 
+            border-top: 1px solid rgba(0,0,0,0.05);
+            display: flex; position: relative; z-index: 50; padding: 8px 8px 0 8px;
+            padding-bottom: env(safe-area-inset-bottom, 8px);
+            box-shadow: 0 -5px 15px -3px rgba(0, 0, 0, 0.03);
+        }
+        .nav-item {
+            flex: 1; text-align: center; padding: 10px 5px; font-size: 11px; 
+            font-weight: 600; color: #64748b; 
+            z-index: 2; cursor: pointer; transition: color 0.2s; border-radius: 12px;
+            display: flex; flex-direction: column; align-items: center; gap: 2px;
+        }
+        .nav-item.active { color: #0284c7; background-color: #f0f9ff; }
+        #nav-chat.active { color: #7c3aed; background-color: #f5f3ff; }
+        #nav-settings.active { color: #52525b; background-color: #f4f4f5; }
+        .nav-item i { font-size: 16px; line-height: 1; }
+        
+        /* --- [v5] Form Styles (Shared) --- */
+        .form-label { display: block; text-transform: uppercase; font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 6px; letter-spacing: 0.5px; }
+        .form-input { 
+            width: 100%; background: white; border: 1px solid #cbd5e1; 
+            border-radius: 12px; padding: 10px 14px; font-size: 14px; color: #1e293b; 
+            transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.02); 
+        }
+        .form-input:focus { 
+            outline: none; border-color: #0ea5e9; 
+            box-shadow: 0 0 0 3px #bfdbfe; 
+        }
+        .btn { 
+            display: inline-flex; align-items: center; justify-content: center; 
+            padding: 12px 20px; border-radius: 14px; font-size: 14px; 
+            font-weight: 600; transition: all 0.2s; cursor: pointer; 
+            border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
+        }
+        .btn-primary { background-color: #0ea5e9; color: white; }
+        .btn-primary:hover { background-color: #0284c7; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* --- [v5] Feed View Styles --- */
+        #view-feed { background-color: #f1f5f9; }
+        .feed-card {
+            background-color: white;
+            border-radius: 16px;
+            margin-bottom: 16px;
+            overflow: hidden;
+            animation: slide-up 0.5s ease-out;
+            box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e2e8f0; /* slate-200 */
+            transition: all 0.2s;
+        }
+        .feed-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px -5px rgba(0, 0, 0, 0.07);
+        }
+        .feed-card-content { padding: 16px; }
+        .feed-card-title {
+            font-size: 17px; font-weight: 600; color: #0369a1; /* brand-700 */
+            line-height: 1.4; display: block; text-decoration: none;
+        }
+        .feed-card-title:hover { text-decoration: underline; color: #0284c7; }
+        .feed-card-snippet {
+            font-size: 14px; color: #475569; /* slate-600 */
+            margin-top: 8px; line-height: 1.6;
+            display: -webkit-box; -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .feed-card-footer {
+            font-size: 12px; font-weight: 500; color: #64748b; /* slate-500 */
+            margin-top: 16px; display: flex; align-items: center; gap: 12px;
+            border-top: 1px solid #f1f5f9; /* slate-100 */
+            padding: 12px 16px; background-color: #f8fafc; /* slate-50 */
+        }
+        .feed-card-source-icon {
+            width: 32px; height: 32px; border-radius: 99px;
+            background-color: #e0f2fe; /* brand-100 */
+            color: #0284c7; /* brand-600 */
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        .skeleton-card {
+            background-color: white; border-radius: 16px; margin-bottom: 16px;
+            overflow: hidden; box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e2e8f0; padding: 16px;
+        }
+        .skeleton-line { background-color: #e2e8f0; border-radius: 6px; }
+
+        /* --- [v5] Chat View Styles --- */
+        #view-chat { 
+            display: none; /* Start hidden */
+            flex-direction: column; height: 100%; padding: 0; 
+            background-color: #f1f5f9; /* slate-100 */
+        }
+        #chat-message-container { 
+            flex: 1; overflow-y: auto; padding: 16px; 
+            display: flex; flex-direction: column; gap: 12px; 
+        }
+        .chat-bubble { max-width: 85%; padding: 10px 16px; border-radius: 20px; font-size: 15px; line-height: 1.6; word-wrap: break-word; }
+        .chat-bubble-user { background-color: #7c3aed; color: white; border-bottom-right-radius: 5px; align-self: flex-end; }
+        .chat-bubble-ai { 
+            background-color: #ffffff; 
+            color: #334155; border: 1px solid #e2e8f0; 
+            border-bottom-left-radius: 5px; align-self: flex-start; 
+            display: flex; gap: 10px; align-items: flex-start; 
+            box-shadow: 0 2px 8px -2px rgba(0,0,0,0.03); /* [FIX] Added subtle shadow */
+        }
+        .chat-bubble-ai i { 
+            color: #7c3aed; /* [FIX] ai-600 */
+            background-color: #f5f3ff; /* [FIX] ai-50 */
+            width: 32px; /* [FIX] */
+            height: 32px; /* [FIX] */
+            border-radius: 50%; /* [FIX] */
+            display: flex; /* [FIX] */
+            align-items: center; /* [FIX] */
+            justify-content: center; /* [FIX] */
+            flex-shrink: 0; /* [FIX] */
+            font-size: 14px; /* [FIX] */
+            /* [REMOVED] padding-top: 5px; */
+        }
+        
+        /* [FIX] New block for AI content formatting */
+        .ai-content-container {
+            flex: 1; /* Take remaining space */
+            padding-top: 2px; /* Align with icon */
+        }
+        .ai-content-container strong {
+            font-weight: 600;
+            color: #1e293b; /* slate-800 */
+        }
+        .ai-content-container ul {
+            padding-left: 1.25rem; /* pl-5 */
+            margin-top: 0.5rem; /* mt-2 */
+            margin-bottom: 0.5rem; /* mb-2 */
+        }
+        .ai-content-container li {
+            list-style-type: disc;
+            margin-bottom: 0.25rem; /* mb-1 */
+        }
+        
+        /* [v5] Citation/Sources Box */
+        .chat-sources {
+            margin-top: 12px;
+            border-top: 1px dashed #cbd5e1;
+            padding-top: 12px;
+        }
+        .chat-sources-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        .chat-source-item {
+            display: block;
+            font-size: 13px;
+            color: #0284c7;
+            text-decoration: none;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .chat-source-item:hover { text-decoration: underline; }
+
+        #chat-form-container {
+            background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 16px;
+            padding-bottom: calc(env(safe-area-inset-bottom, 0) + 16px);
+        }
+        #chat-input-row { display: flex; gap: 10px; align-items: flex-end; }
+        #chat-input { 
+            flex: 1; background-color: white; border: 1px solid #cbd5e1; 
+            border-radius: 16px; padding: 12px 18px; font-size: 15px; 
+            transition: all 0.2s; resize: none; max-height: 120px; 
+        }
+        #chat-input:focus { outline: none; border-color: #8b5cf6; box-shadow: 0 0 0 3px #ddd6fe; }
+        #chat-send-btn {
+            width: 48px; height: 48px; border-radius: 99px; color: white;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; transition: all 0.2s;
+            background-color: #8b5cf6;
+        }
+        #chat-send-btn:hover { background-color: #7c3aed; }
+        #chat-send-btn:disabled { background-color: #c4b5fd; cursor: not-allowed; opacity: 0.7; }
+        #chat-input:disabled { background-color: #f1f5f9; }
+        
+        /* Typing Indicator */
+        .chat-bubble-ai-typing { background-color: #ffffff; color: #334155; border: 1px solid #e2e8f0; border-bottom-left-radius: 5px; align-self: flex-start; display: flex; gap: 10px; align-items: center; padding: 14px 16px; }
+        .typing-dot { width: 8px; height: 8px; background-color: #94a3b8; border-radius: 50%; animation: pulseDot 1.4s infinite ease-in-out both; }
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    </style>
+</head>
+<body class="bg-slate-100">
+
+    <!-- App Shell -->
+    <main id="app-shell">
+
+        <!-- Header -->
+        <!-- [FIX] Fixed backdrop-filter class and justify-content class -->
+        <header class="px-6 py-4 flex justify-between items-center sticky top-0 bg-white/90 z-30 backdrop-blur-md border-b border-slate-100/80">
+            <div class="flex flex-col">
+                <h1 class="text-xl font-bold text-brand-600">Teacher Job</h1>
+                <p id="header-subtitle" class="text-sm text-slate-500">ฟีดข่าวรับสมัคร (AI)</p>
+            </div>
+            <!-- [FIX] Fixed justify-center -->
+            <div id="header-icon-container" class="w-12 h-12 bg-sky-100 rounded-full flex items-center justify-center text-sky-600 border-4 border-white shadow-md">
+                <i id="header-icon" class="fa-solid fa-bell text-xl"></i>
+            </div>
+        </header>
+        
+        <!-- Content Area -->
+        <div id="content-area" class="flex-1 overflow-y-auto no-scrollbar">
+            
+            <!-- [v5] View 1: Feed -->
+            <section id="view-feed" class="p-4 pt-6 md:p-6">
+                <!-- Smart Search (for feed) -->
+                <form id="feed-search-form" class="mb-4 mx-2">
+                    <div class="relative">
+                        <input type="text" id="feed-search-input" class="form-input !pl-10 !py-3" placeholder="ค้นหาประกาศในฟีด (เช่น 'อัตราจ้าง สงขลา')...">
+                        <i class="fa-solid fa-search text-slate-400 absolute top-1/2 left-4 -translate-y-1/2"></i>
+                        <button id="feed-search-btn" type="submit" class="absolute top-1/2 right-2 -translate-y-1/2 btn btn-primary h-9 w-12 !p-0">
+                            <i id="feed-search-icon" class="fa-solid fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- 1. API Key Prompt State -->
+                <div id="api-key-prompt" class="hidden text-center text-slate-500 mt-10 p-6 bg-yellow-50 border border-yellow-200 rounded-2xl animate-fade-in mx-2">
+                    <i class="fa-solid fa-triangle-exclamation text-5xl text-yellow-500 mb-4"></i>
+                    <h2 class="font-semibold text-lg text-yellow-700">กรุณากรอก API Key</h2>
+                    <p>แอปนี้จำเป็นต้องใช้ Gemini API Key<br>กรุณาไปที่แท็บ <i class="fa-solid fa-sliders"></i> <strong>ตั้งค่า</strong> เพื่อกรอก API Key</p>
+                </div>
+
+                <!-- 2. Loading State (Skeleton) -->
+                <div id="loading-container" class="hidden animate-fade-in mx-2">
+                    <h3 class="text-lg font-bold text-slate-700 mb-4 px-1">
+                        <i class="fa-solid fa-spinner fa-spin text-brand-500"></i>
+                        AI กำลังค้นหา: <span id="loading-query" class="text-brand-600">...</span>
+                    </h3>
+                    <div class="animate-pulse space-y-4">
+                        <!-- Skeleton Card 1 -->
+                        <div class="skeleton-card">
+                            <div class="skeleton-line h-5 w-3/4"></div>
+                            <div class="skeleton-line h-3 w-full mt-4"></div>
+                            <div class="skeleton-line h-3 w-5/6 mt-2"></div>
+                            <div class="flex items-center gap-3 mt-5 pt-3 border-t border-slate-100">
+                                <div class="w-8 h-8 rounded-full bg-slate-200"></div>
+                                <div class="skeleton-line h-3 w-1/3"></div>
+                            </div>
+                        </div>
+                        <!-- Skeleton Card 2 -->
+                        <div class="skeleton-card">
+                            <div class="skeleton-line h-5 w-1/2"></div>
+                            <div class="skeleton-line h-3 w-full mt-4"></div>
+                            <div class="flex items-center gap-3 mt-5 pt-3 border-t border-slate-100">
+                                <div class="w-8 h-8 rounded-full bg-slate-200"></div>
+                                <div class="skeleton-line h-3 w-1/3"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 3. Error State -->
+                <div id="error-container" class="hidden text-center text-red-600 mt-10 p-6 bg-red-50 border border-red-200 rounded-2xl animate-fade-in mx-2">
+                    <i class="fa-solid fa-circle-exclamation text-5xl mb-4"></i>
+                    <h2 class="font-semibold text-lg">เกิดข้อผิดพลาด (ฟีด)</h2>
+                    <p id="error-text" class="text-red-700">ข้อความแสดงข้อผิดพลาด</p>
+                </div>
+
+                <!-- 4. Results -->
+                <div id="results-container" class="hidden animate-fade-in mx-2">
+                    <h3 class="text-lg font-bold text-slate-700 mb-4 px-1">
+                        ผลลัพธ์สำหรับ: "<span id="feed-title" class="text-brand-600"></span>"
+                    </h3>
+                    <div id="results-list">
+                        <!-- JS populates this -->
+                    </div>
+                </div>
+            </section>
+            
+            <!-- [v5] View 2: Chat -->
+            <section id="view-chat">
+                <div id="chat-message-container" class="no-scrollbar">
+                    <!-- JS populates this -->
+                </div>
+                <div id="chat-form-container">
+                    <form id="chat-form">
+                        <div id="chat-input-row">
+                            <textarea id="chat-input" placeholder="ถามคำถามผู้ช่วย AI ที่นี่..." rows="1"></textarea>
+                            <button id="chat-send-btn" type="submit" class="btn btn-primary !rounded-full !p-0 w-12 h-12 !bg-ai-500 hover:!bg-ai-600">
+                                <i id="chat-send-icon" class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+            
+            <!-- [v5] View 3: Settings -->
+            <section id="view-settings" class="hidden p-6 space-y-6 bg-slate-100 h-full">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100">
+                    <h3 class="text-lg font-bold text-slate-700 mb-4">ตั้งค่า API</h3>
+                    <div>
+                        <label for="input-api-key" class="form-label">
+                            <i class="fa-solid fa-key text-yellow-500"></i> Gemini API Key
+                        </label>
+                        <div class="flex gap-2">
+                            <input type="password" id="input-api-key" class="form-input text-xs flex-1" placeholder="กรอก API Key (จำเป็น)">
+                            <button id="save-key-btn" class="btn btn-primary text-xs py-2 px-4 h-[39px]">
+                                <i class="fa-solid fa-save mr-2"></i> บันทึก
+                            </button>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-2">
+                            จำเป็นสำหรับ "ฟีดข่าว" และ "ผู้ช่วย AI"
+                        </p>
+                        <!-- [FIX] Added message area for errors/success -->
+                        <p id="settings-message" class="text-xs mt-2 hidden"></p>
+                    </div>
+                </div>
+            </section>
+            
+        </div>
+        
+        <!-- [v5] Bottom Nav -->
+        <nav id="bottom-nav" class="bottom-nav shrink-0">
+            <div id="nav-feed" class="nav-item active">
+                <i class="fa-solid fa-rss"></i>
+                <span>ฟีดข่าว</span>
+            </div>
+            <div id="nav-chat" class="nav-item">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>ผู้ช่วย AI</span>
+            </div>
+            <div id="nav-settings" class="nav-item">
+                <i class="fa-solid fa-sliders"></i>
+                <span>ตั้งค่า</span>
+            </div>
+        </nav>
+    </main>
+
+    <script type="module">
+        // --- CONSTANTS ---
+        const DEFAULT_QUERY = "ประกาศรับสมัครครูผู้ช่วย ที่ยังไม่หมดเขต 2568";
+
+        // --- STATE & DOM ---
+        let state = {
+            apiKey: '',
+            isLoadingFeed: false,
+            isLoadingChat: false,
+            currentView: 'view-feed',
+            chatHistory: []
+        };
+
+        const dom = {
+            // [v5] Views
+            views: {
+                feed: document.getElementById('view-feed'),
+                chat: document.getElementById('view-chat'),
+                settings: document.getElementById('view-settings')
+            },
+            // [v5] Nav
+            nav: {
+                feed: document.getElementById('nav-feed'),
+                chat: document.getElementById('nav-chat'),
+                settings: document.getElementById('nav-settings')
+            },
+            // [v5] Header
+            headerSubtitle: document.getElementById('header-subtitle'),
+            headerIcon: document.getElementById('header-icon'),
+            headerIconContainer: document.getElementById('header-icon-container'),
+
+            // [v5] Settings View
+            apiKeyInput: document.getElementById('input-api-key'),
+            saveKeyBtn: document.getElementById('save-key-btn'),
+            settingsMessage: document.getElementById('settings-message'), // [FIX] Added
+            
+            // [v5] Feed View
+            feedSearchForm: document.getElementById('feed-search-form'),
+            feedSearchInput: document.getElementById('feed-search-input'),
+            feedSearchBtn: document.getElementById('feed-search-btn'),
+            feedSearchIcon: document.getElementById('feed-search-icon'),
+            apiKeyPrompt: document.getElementById('api-key-prompt'),
+            loadingContainer: document.getElementById('loading-container'),
+            loadingQuery: document.getElementById('loading-query'),
+            errorContainer: document.getElementById('error-container'),
+            errorText: document.getElementById('error-text'),
+            resultsContainer: document.getElementById('results-container'),
+            feedTitle: document.getElementById('feed-title'),
+            resultsList: document.getElementById('results-list'),
+            
+            // [v5] Chat View
+            chatMessageContainer: document.getElementById('chat-message-container'),
+            chatForm: document.getElementById('chat-form'),
+            chatInput: document.getElementById('chat-input'),
+            chatSendBtn: document.getElementById('chat-send-btn'),
+            chatSendIcon: document.getElementById('chat-send-icon'),
+        };
+
+        // --- INITIALIZATION ---
+        function initApp() {
+            loadApiKey();
+            
+            // [v5] Listeners
+            dom.feedSearchForm.addEventListener('submit', handleManualFeedSearch);
+            dom.saveKeyBtn.addEventListener('click', handleSaveKey);
+            dom.chatForm.addEventListener('submit', handleChatSubmit);
+            
+            dom.nav.feed.addEventListener('click', () => switchView('view-feed'));
+            dom.nav.chat.addEventListener('click', () => switchView('view-chat'));
+            dom.nav.settings.addEventListener('click', () => switchView('view-settings'));
+            
+            dom.chatInput.addEventListener('input', () => {
+                dom.chatInput.style.height = 'auto'; 
+                dom.chatInput.style.height = `${dom.chatInput.scrollHeight}px`;
+            });
+            dom.chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    dom.chatForm.dispatchEvent(new Event('submit', { cancelable: true }));
+                }
+            });
+            
+            // [v5] Load chat history
+            loadChatHistory();
+            renderChatHistory();
+
+            // [v5] Check API Key and run auto-feed
+            if (state.apiKey) {
+                switchView('view-feed');
+                runJobFeedSearch(DEFAULT_QUERY);
+            } else {
+                // Force user to settings if no key
+                switchView('view-settings');
+            }
+        }
+
+        // --- [v5] NAVIGATION ---
+        function switchView(viewId) {
+            state.currentView = viewId;
+
+            // Hide all views
+            Object.values(dom.views).forEach(view => {
+                view.style.display = 'none';
+            });
+            
+            // Show selected view
+            const view = dom.views[viewId.replace('view-', '')];
+            if (view) {
+                if (viewId === 'view-chat') {
+                    view.style.display = 'flex'; // Chat uses flexbox
+                } else {
+                    view.style.display = 'block'; // Others use block
+                }
+            }
+            
+            // Update Nav buttons
+            Object.values(dom.nav).forEach(nav => nav.classList.remove('active'));
+            const navBtn = dom.nav[viewId.replace('view-', '')];
+            if (navBtn) {
+                navBtn.classList.add('active');
+            }
+            
+            updateHeader(viewId);
+        }
+
+        function updateHeader(viewId) {
+            let subtitle = "ฟีดข่าว (AI)";
+            let iconClass = "fa-solid fa-rss";
+            let bgColor = "bg-sky-100";
+            let textColor = "text-sky-600";
+
+            switch(viewId) {
+                case 'view-chat':
+                    subtitle = "ผู้ช่วย AI (Q&A)";
+                    iconClass = "fa-solid fa-wand-magic-sparkles";
+                    bgColor = "bg-ai-100";
+                    textColor = "text-ai-600";
+                    break;
+                case 'view-settings':
+                    subtitle = "ตั้งค่า API Key";
+                    iconClass = "fa-solid fa-sliders";
+                    bgColor = "bg-slate-100";
+                    textColor = "text-slate-600";
+                    break;
+            }
+            
+            dom.headerSubtitle.textContent = subtitle;
+            dom.headerIcon.className = `${iconClass} text-xl`;
+            // [FIX] Fixed justify-center
+            dom.headerIconContainer.className = `w-12 h-12 ${bgColor} ${textColor} rounded-full flex items-center justify-center border-4 border-white shadow-md`;
+        }
+
+        // --- API Key Persistence ---
+        function saveApiKey(key) {
+            localStorage.setItem('teacher_job_feed_api_key_v5', key);
+        }
+        function loadApiKey() {
+            const key = localStorage.getItem('teacher_job_feed_api_key_v5');
+            if (key) {
+                state.apiKey = key;
+                dom.apiKeyInput.value = key;
+            }
+        }
+        
+        // [FIX] Updated to show success/error messages without alert()
+        function handleSaveKey() {
+            dom.settingsMessage.classList.add('hidden'); // Hide old messages
+            const key = dom.apiKeyInput.value.trim();
+            if (!key) {
+                showErrorState("กรุณากรอก API Key", 'view-settings');
+                return;
+            }
+            
+            state.apiKey = key;
+            saveApiKey(key);
+            
+            // Show success message
+            dom.saveKeyBtn.innerHTML = `<i class="fa-solid fa-check mr-2"></i> บันทึกแล้ว!`;
+            dom.saveKeyBtn.classList.add('!bg-green-500'); // Use ! to override tailwind specificity
+            dom.saveKeyBtn.disabled = true;
+
+            setTimeout(() => {
+                dom.saveKeyBtn.innerHTML = `<i class="fa-solid fa-save mr-2"></i> บันทึก`;
+                dom.saveKeyBtn.classList.remove('!bg-green-500');
+                dom.saveKeyBtn.disabled = false;
+            }, 2500);
+            
+            // Auto-switch to feed and run search
+            // Delay switch slightly to let user see success
+            setTimeout(() => {
+                // Only switch if we are still on settings page
+                if (state.currentView === 'view-settings') {
+                    switchView('view-feed');
+                    runJobFeedSearch(DEFAULT_QUERY); 
+                }
+            }, 1500);
+        }
+
+        // --- EVENT HANDLERS ---
+        function handleManualFeedSearch(event) {
+            event.preventDefault();
+            if (state.isLoadingFeed) return;
+            const query = dom.feedSearchInput.value.trim();
+            if (!query) return;
+            
+            runJobFeedSearch(query);
+        }
+
+        // --- UI STATE MANAGEMENT (FEED) ---
+        
+        function showApiPromptState() {
+            dom.loadingContainer.classList.add('hidden');
+            dom.resultsContainer.classList.add('hidden');
+            dom.errorContainer.classList.add('hidden');
+            dom.apiKeyPrompt.classList.remove('hidden');
+            // Disable feed search
+            dom.feedSearchBtn.disabled = true;
+            dom.feedSearchInput.disabled = true;
+        }
+
+        function showLoadingState(query) {
+            state.isLoadingFeed = true;
+            dom.feedSearchBtn.disabled = true;
+            dom.feedSearchInput.disabled = true;
+            dom.feedSearchIcon.className = "fa-solid fa-spinner fa-spin";
+            
+            dom.apiKeyPrompt.classList.add('hidden');
+            dom.resultsContainer.classList.add('hidden');
+            dom.errorContainer.classList.add('hidden'); 
+            
+            dom.loadingQuery.textContent = query;
+            dom.loadingContainer.classList.remove('hidden');
+        }
+
+        // [FIX] Updated to handle 'view-settings' without alert()
+        function showErrorState(message, view = 'view-feed') {
+            if (view === 'view-feed') {
+                state.isLoadingFeed = false;
+                dom.feedSearchBtn.disabled = false;
+                dom.feedSearchInput.disabled = false;
+                dom.feedSearchIcon.className = "fa-solid fa-search";
+
+                dom.loadingContainer.classList.add('hidden');
+                dom.apiKeyPrompt.classList.add('hidden');
+                dom.resultsContainer.classList.add('hidden');
+                
+                dom.errorText.textContent = message;
+                dom.errorContainer.classList.remove('hidden');
+                
+                // [FIX] Updated to handle the new Thai message and add icon
+                if (message.includes("API key") || message.includes("API Key") || message.includes("Key ของคุณไม่ถูกต้อง")) {
+                    dom.errorText.innerHTML = `<strong>${message}</strong><br>กรุณาตรวจสอบ API Key ในแท็บ <i class="fa-solid fa-sliders"></i> 'ตั้งค่า'`;
+                }
+            } else if (view === 'view-settings') {
+                // [FIX] Replaced alert() with inline message
+                dom.settingsMessage.textContent = `ข้อผิดพลาด: ${message}`;
+                dom.settingsMessage.className = 'text-xs mt-2 text-red-600 animate-fade-in';
+                dom.settingsMessage.classList.remove('hidden');
+                // Hide after 3 seconds
+                setTimeout(() => {
+                    dom.settingsMessage.classList.add('hidden');
+                }, 3000);
+            }
+        }
+
+        function showResultsState(query, results) {
+            state.isLoadingFeed = false;
+            dom.feedSearchBtn.disabled = false;
+            dom.feedSearchInput.disabled = false;
+            dom.feedSearchIcon.className = "fa-solid fa-search";
+
+            dom.loadingContainer.classList.add('hidden');
+            dom.apiKeyPrompt.classList.add('hidden');
+            dom.errorContainer.classList.add('hidden');
+
+            dom.feedTitle.textContent = query;
+            dom.resultsList.innerHTML = ''; 
+
+            if (results.length === 0) {
+                dom.resultsList.innerHTML = `
+                    <div class="text-center text-slate-500 mt-8 p-6 bg-white rounded-2xl border">
+                        <i class="fa-solid fa-folder-open text-5xl text-slate-300 mb-4"></i>
+                        <p class="font-semibold text-lg">ไม่พบผลลัพธ์</p>
+                        <p>AI ไม่พบประกาศรับสมัครงาน (ที่ยังไม่หมดเขต) ที่ตรงกับคำค้นหาของคุณ</p>
+                    </div>
+                `;
+            } else {
+                results.forEach(item => {
+                    const card = createFeedCard(item);
+                    dom.resultsList.appendChild(card);
+                });
+            }
+            
+            dom.resultsContainer.classList.remove('hidden');
+        }
+        
+        // --- FEED RENDERING ---
+        
+        function createFeedCard(item) {
+            const card = document.createElement('div');
+            card.className = 'feed-card';
+            
+            let iconClass = "fa-solid fa-globe";
+            if (item.source_name.includes("kruwandee")) {
+                iconClass = "fa-solid fa-star";
+            } else if (item.source_name.includes("obec")) {
+                iconClass = "fa-solid fa-building-flag";
+            }
+            
+            card.innerHTML = `
+                <div class="feed-card-content">
+                    <a href="${escapeHTML(item.url)}" target="_blank" class="feed-card-title">
+                        ${escapeHTML(item.title)}
+                    </a>
+                    <p class="feed-card-snippet">
+                        ${escapeHTML(item.snippet)}
+                    </p>
+                </div>
+                <div class="feed-card-footer">
+                    <div class="feed-card-source-icon">
+                        <i class="${iconClass}"></i>
+                    </div>
+                    <div>
+                        <span>${escapeHTML(item.source_name)}</span>
+                    </div>
+                </div>
+            `;
+            return card;
+        }
+
+
+        // --- [v5] CORE: AI JOB FEED SEARCH (v4 logic) ---
+        async function runJobFeedSearch(query) {
+            if (state.isLoadingFeed) return;
+            
+            if (!state.apiKey) {
+                showApiPromptState();
+                return;
+            }
+            
+            showLoadingState(query);
+
+            const today = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/BangKOK' });
+
+            const systemPrompt = `
+คุณคือ AI ผู้เชี่ยวชาญด้านการ "คัดกรอง" ข่าวสารการเปิดรับสมัครงานข้าราชการครู (ครูผู้ช่วย, ครูอัตราจ้าง) ในประเทศไทย
+**ข้อมูลสำคัญ: วันนี้คือวันที่ ${today}**
+หน้าที่ของคุณคือ:
+1.  ใช้ Google Search เพื่อค้นหาประกาศรับสมัครงานตามคำค้นหา
+2.  **วิเคราะห์และคัดกรอง:** อ่านเนื้อหาผลการค้นหาเพื่อหา "วันปิดรับสมัคร"
+3.  **กรองข่าวเก่าออก:** เปรียบเทียบ "วันปิดรับสมัคร" กับวันที่ปัจจุบัน (${today}) และ **แสดงเฉพาะข่าวที่ยังไม่หมดเขตรับสมัครเท่านั้น**
+ข้อกำหนดการตอบกลับ (สำคัญที่สุด):
+1.  คุณต้องตอบกลับเป็น **JSON Array String** ที่สมบูรณ์เท่านั้น
+2.  ผลลัพธ์ควรมีข้อมูล 'title', 'url', 'source_name', และ 'snippet' (พร้อมระบุวันปิดรับสมัครที่คุณพบ)
+3.  หากไม่พบผลลัพธ์ (หรือทุกข่าวที่พบหมดเขตแล้ว) ให้ตอบกลับเป็น Array ว่าง []
+4.  **ห้าม** มีข้อความอธิบายใดๆ ทั้งสิ้น และ **ห้าม** มี Markdown backticks (เช่น \`\`\`json ... \`\`\`)
+5.  ผลลัพธ์ของคุณต้องเป็น String ที่สามารถ Parse ด้วย JSON.parse() ได้ทันที
+`;
+            
+            const payload = {
+                contents: [{ parts: [{ text: query }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                tools: [{ "google_search": {} }]
+            };
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${state.apiKey}`;
+
+            try {
+                const response = await fetchWithBackoff(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.json();
+                    throw new Error(errorBody.error?.message || `HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const aiResponseText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                
+                if (!aiResponseText) {
+                    throw new Error("AI ไม่ได้ส่งข้อมูลกลับมา (Empty response)");
+                }
+
+                const cleanJsonString = aiResponseText.replace(/```json/g, '').replace(/```/g, '').trim();
+
+                if (!cleanJsonString.startsWith('[')) {
+                    console.error("AI Response (Not JSON):", aiResponseText);
+                    throw new Error("AI ตอบกลับในรูปแบบที่ผิดพลาด (Not an array)");
+                }
+                
+                const searchResults = JSON.parse(cleanJsonString);
+                showResultsState(query, searchResults);
+
+            } catch (error) {
+                console.error("AI Job Feed Error:", error);
+                // [FIX] Make error message more user-friendly
+                let friendlyMessage = `การค้นหาล้มเหลว: ${error.message}`;
+                if (error.message.includes("API key not valid")) {
+                    friendlyMessage = "API Key ของคุณไม่ถูกต้อง";
+                }
+                showErrorState(friendlyMessage, 'view-feed');
+            }
+        }
+        
+        // --- [v5] CORE: AI Q&A CHAT ---
+        
+        async function handleChatSubmit(event) {
+            event.preventDefault();
+            if (state.isLoadingChat) return;
+            
+            const query = dom.chatInput.value.trim();
+            if (!query) return;
+            
+            if (!state.apiKey) {
+                addMessageToChat('ai', 'กรุณากรอก API Key ในหน้า "ตั้งค่า" ก่อนใช้งานผู้ช่วย AI ค่ะ');
+                return;
+            }
+            
+            state.isLoadingChat = true;
+            dom.chatInput.value = '';
+            dom.chatInput.style.height = 'auto';
+            dom.chatInput.disabled = true;
+            dom.chatSendBtn.disabled = true;
+            dom.chatSendIcon.className = "fa-solid fa-spinner fa-spin";
+            
+            addMessageToChat('user', query);
+            addTypingIndicator();
+            
+            const today = new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'Asia/BangKOK' });
+
+            const systemPrompt = `
+คุณคือ AI ผู้ช่วยเชี่ยวชาญ (Q&A Expert) ด้านการศึกษาและข้าราชการครูในประเทศไทย
+**ข้อมูลสำคัญ: วันนี้คือวันที่ ${today}**
+
+หน้าที่ของคุณคือ:
+1.  ตอบคำถามที่ผู้ใช้ถามมาอย่างสุภาพ ชัดเจน และตรงประเด็น
+2.  ใช้ Google Search (\`tools\`) เพื่อค้นหาข้อมูลล่าสุดในการตอบคำถามเสมอ
+3.  **สำคัญมาก:** คุณต้องให้คำตอบเป็น "ข้อความ" เท่านั้น (ไม่ใช่ JSON)
+4.  พยายามตอบคำถามโดยอ้างอิงจากแหล่งข้อมูลที่ค้นหามา
+`;
+            
+             const payload = {
+                contents: [{ parts: [{ text: query }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                tools: [{ "google_search": {} }] // We need citations!
+            };
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${state.apiKey}`;
+
+            try {
+                const response = await fetchWithBackoff(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.json();
+                    throw new Error(errorBody.error?.message || `HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+                
+                if (!candidate || !candidate.content?.parts?.[0]?.text) {
+                     throw new Error("AI ไม่ได้ส่งข้อมูลคำตอบกลับมา");
+                }
+                
+                // 1. Get AI's text response
+                const aiResponseText = candidate.content.parts[0].text;
+                
+                // 2. [v5] Get Citations (Sources)
+                let sources = [];
+                const groundingMetadata = candidate.groundingMetadata;
+                if (groundingMetadata && groundingMetadata.groundingAttributions) {
+                    sources = groundingMetadata.groundingAttributions
+                        .map(attribution => ({
+                            uri: attribution.web?.uri,
+                            title: attribution.web?.title,
+                        }))
+                        .filter(source => source.uri && source.title); // Ensure sources are valid
+                }
+
+                // 3. Add to chat
+                removeTypingIndicator();
+                addMessageToChat('ai', aiResponseText, sources);
+
+            } catch (error) {
+                console.error("AI Chat Error:", error);
+                removeTypingIndicator();
+                // [FIX] Make error message more user-friendly
+                let friendlyMessage = `ขออภัยค่ะ เกิดข้อผิดพลาด: ${error.message}`;
+                if (error.message.includes("API key not valid")) {
+                    friendlyMessage = "API Key ของคุณไม่ถูกต้อง กรุณาตรวจสอบในแท็บ 'ตั้งค่า' ค่ะ";
+                }
+                addMessageToChat('ai', friendlyMessage);
+            } finally {
+                state.isLoadingChat = false;
+                dom.chatInput.disabled = false;
+                dom.chatSendBtn.disabled = false;
+                dom.chatSendIcon.className = "fa-solid fa-paper-plane";
+            }
+        }
+        
+        // --- [v5] CHAT RENDERING ---
+        
+        function loadChatHistory() {
+            const data = localStorage.getItem('teacher_job_feed_chat_history_v5');
+             if (data) {
+                 try { 
+                     state.chatHistory = JSON.parse(data); 
+                 } catch (e) { 
+                     state.chatHistory = []; 
+                 }
+            } else { 
+                state.chatHistory = []; 
+            }
+        }
+        function saveChatHistory() {
+             try {
+                 const recentHistory = state.chatHistory.slice(-50); // Save only last 50
+                 localStorage.setItem('teacher_job_feed_chat_history_v5', JSON.stringify(recentHistory));
+             } catch (error) {
+                 console.error("Error saving chat history:", error);
+             }
+        }
+        
+        function renderChatHistory() {
+            dom.chatMessageContainer.innerHTML = state.chatHistory.map(msg => {
+                if (msg.role === 'user') {
+                    // [FIX] Render newlines
+                    const userText = escapeHTML(msg.text).replace(/\n/g, '<br>');
+                    return `<div class="chat-bubble chat-bubble-user">${userText}</div>`;
+                } else {
+                    // AI Message
+                    let sourcesHtml = '';
+                    if (msg.sources && msg.sources.length > 0) {
+                        sourcesHtml = `
+                            <div class="chat-sources">
+                                <div class="chat-sources-title">แหล่งอ้างอิง:</div>
+                                ${msg.sources.map((source, index) => `
+                                    <a href="${escapeHTML(source.uri)}" target="_blank" class="chat-source-item">
+                                        ${index + 1}. ${escapeHTML(source.title)}
+                                    </a>
+                                `).join('')}
+                            </div>
+                        `;
+                    }
+                    
+                    // [FIX] Render newlines, bold, and lists
+                    let aiText = escapeHTML(msg.text);
+                    // 1. Handle bold
+                    aiText = aiText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    // 2. Handle lists (items starting with newline + *)
+                    aiText = aiText.replace(/\n\* (.*)/g, '\n<li>$1</li>'); // Simpler LI
+                    // 3. Wrap consecutive LIs in a UL
+                    // This regex finds one or more <li> items (potentially separated by whitespace/newlines) and wraps them.
+                    aiText = aiText.replace(/(?:<li>.*<\/li>\s*)+/gs, (match) => `<ul>${match.trim()}</ul>`);
+                    // 4. Handle remaining newlines
+                    aiText = aiText.replace(/\n/g, '<br>');
+                    
+                    // [FIX] New HTML structure for better styling
+                    return `<div class="chat-bubble chat-bubble-ai">
+                                <i class="fa-solid fa-robot fa-fw"></i>
+                                <div class="flex-1 ai-content-container"> <!-- [ADD] wrapper class -->
+                                    <span>${aiText}</span>
+                                    ${sourcesHtml}
+                                </div>
+                            </div>`;
+                }
+            }).join('');
+            
+            if (state.isLoadingChat) {
+                addTypingIndicator();
+            }
+            scrollToChatBottom();
+        }
+
+        function addMessageToChat(role, text, sources = []) {
+            state.chatHistory.push({ role, text, sources });
+            saveChatHistory();
+            renderChatHistory();
+        }
+        
+        function addTypingIndicator() {
+            if (document.getElementById('ai-typing-indicator')) return; 
+            const bubble = document.createElement('div');
+            bubble.id = 'ai-typing-indicator';
+            bubble.className = 'chat-bubble chat-bubble-ai-typing';
+            bubble.innerHTML = `<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>`;
+            dom.chatMessageContainer.appendChild(bubble);
+            scrollToChatBottom();
+        }
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('ai-typing-indicator');
+            if (indicator) indicator.remove();
+        }
+        function scrollToChatBottom() {
+            dom.chatMessageContainer.scrollTop = dom.chatMessageContainer.scrollHeight;
+        }
+
+        // --- UTILITY FUNCTIONS ---
+        function escapeHTML(str) {
+            if (!str) return "";
+            return str.replace(/[&<>"']/g, function(match) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[match];
+            });
+        }
+        
+        async function fetchWithBackoff(url, options, retries = 5, delay = 1000) {
+            let attempt = 0;
+            while (attempt < retries) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.ok) {
+                        return response;
+                    }
+                    if (response.status === 429 || response.status >= 500) {
+                        // [FIX v5.1] Do not log retries to console
+                        await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, attempt)));
+                        attempt++;
+                    } else {
+                        return response; 
+                    }
+                } catch (error) {
+                    attempt++;
+                    if (attempt >= retries) throw error; 
+                    // [FIX v5.1] Do not log retries to console
+                    await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, attempt)));
+                }
+            }
+        }
+        
+        // --- Start App ---
+        initApp();
+    </script>
+</body>
+</html>
