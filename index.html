@@ -193,6 +193,19 @@
             transform: rotate(90deg);
         }
 
+        /* [FIX v5.12] Global Loading Overlay */
+        #app-loading-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: #ffffff;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease-out;
+        }
+
         /* --- [v5] Feed View Styles --- */
         #view-feed { background-color: #f1f5f9; }
         .feed-card {
@@ -373,8 +386,17 @@
 </head>
 <body class="bg-slate-100">
 
-    <!-- App Shell -->
+    <!-- [FIX v5.12] App Shell -->
     <main id="app-shell">
+
+        <!-- [FIX v5.12] Initial Loading Overlay -->
+        <div id="app-loading-overlay">
+            <i class="fa-solid fa-graduation-cap text-6xl text-brand-500 mb-6 animate-bounce"></i>
+            <div class="flex flex-col items-center">
+                <div class="typing-dot bg-brand-500 w-3 h-3 inline-block mx-1"></div>
+                <p class="mt-4 text-slate-500 text-sm font-medium">กำลังเตรียมระบบ...</p>
+            </div>
+        </div>
 
         <!-- Header -->
         <!-- [FIX] Fixed backdrop-filter class and justify-content class -->
@@ -518,13 +540,13 @@
                             <i class="fa-solid fa-key text-yellow-500"></i> Gemini API Key
                         </label>
                         <div class="flex gap-2">
-                            <input type="password" id="input-api-key" class="form-input text-xs flex-1" placeholder="กรอก API Key (จำเป็น)">
+                            <input type="password" id="input-api-key" class="form-input text-xs flex-1" placeholder="กรอก API Key หากต้องการใช้ Key ส่วนตัว">
                             <button id="save-key-btn" class="btn btn-primary text-xs py-2 px-4 h-[39px]">
                                 <i class="fa-solid fa-save mr-2"></i> บันทึก
                             </button>
                         </div>
                         <p class="text-xs text-slate-500 mt-2">
-                            จำเป็นสำหรับ "ฟีดข่าว" และ "ผู้ช่วย AI"
+                            หากไม่กรอก ระบบจะพยายามใช้ Key เริ่มต้น (ถ้ามี)
                         </p>
                         <!-- [FIX] Added message area for errors/success -->
                         <p id="settings-message" class="text-xs mt-2 hidden"></p>
@@ -613,33 +635,40 @@
     </main>
 
     <script type="module">
-        // --- CONSTANTS ---
+        // --- [FIX v5.12] CONFIGURATION ---
+        // *IMPORTANT* Replace this URL with your deployed Google Apps Script Web App URL
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxf9heMrfKRO8g1Qr-zMY3IDwB3RWthKRDdz6ET0wKeC3Sjt0n4X7cnOOeYcGXf-YfhLQ/exec"; 
         const DEFAULT_QUERY = "ประกาศรับสมัครครูผู้ช่วย ที่ยังไม่หมดเขต 2568";
 
         // --- STATE & DOM ---
         let state = {
             apiKey: '',
+            userKey: '', // [FIX v5.12] Track manual user key separately
+            isUsingDefaultKey: false, // [FIX v5.12] Track if using GAS key
             isLoadingFeed: false,
-            isLoadingEduNews: false, // [FIX] Added
+            isLoadingEduNews: false,
             isLoadingChat: false,
             currentView: 'view-feed',
             chatHistory: []
         };
 
         const dom = {
+            // [FIX v5.12] Loading Overlay
+            loadingOverlay: document.getElementById('app-loading-overlay'),
+
             // [v5] Views
             views: {
                 feed: document.getElementById('view-feed'),
                 chat: document.getElementById('view-chat'),
                 settings: document.getElementById('view-settings'),
-                calculator: document.getElementById('view-calculator') // [FIX] Added
+                calculator: document.getElementById('view-calculator')
             },
             // [v5] Nav
             nav: {
                 feed: document.getElementById('nav-feed'),
                 chat: document.getElementById('nav-chat'),
                 settings: document.getElementById('nav-settings'),
-                calculator: document.getElementById('nav-calculator') // [FIX] Added
+                calculator: document.getElementById('nav-calculator')
             },
             // [v5] Header
             headerSubtitle: document.getElementById('header-subtitle'),
@@ -649,7 +678,7 @@
             // [v5] Settings View
             apiKeyInput: document.getElementById('input-api-key'),
             saveKeyBtn: document.getElementById('save-key-btn'),
-            settingsMessage: document.getElementById('settings-message'), // [FIX] Added
+            settingsMessage: document.getElementById('settings-message'),
             
             // [FIX] New Edu News Elements
             eduNewsLoading: document.getElementById('edu-news-loading'),
@@ -668,7 +697,6 @@
             errorContainer: document.getElementById('error-container'),
             errorText: document.getElementById('error-text'),
             resultsContainer: document.getElementById('results-container'),
-            // feedTitle: document.getElementById('feed-title'), // [FIX] Removed
             resultsList: document.getElementById('results-list'),
             
             // [v5] Chat View
@@ -679,7 +707,6 @@
             chatSendIcon: document.getElementById('chat-send-icon'),
             
             // [FIX v5.11] Calculator View (AI Only)
-            // Removed old form DOMs to prevent null errors
             aiProfileInput: document.getElementById('ai-profile-input'),
             aiProfileBtn: document.getElementById('ai-profile-btn'),
             aiProfileIcon: document.getElementById('ai-profile-icon'),
@@ -693,10 +720,42 @@
         };
 
         // --- INITIALIZATION ---
-        function initApp() {
-            loadApiKey();
+        async function initApp() {
+            // [FIX v5.12] Initial loading sequence
+            loadUserApiKey(); // 1. Load local key first
             
-            // [v5] Listeners
+            if (state.userKey) {
+                // A. User has local key -> Use it
+                state.apiKey = state.userKey;
+                state.isUsingDefaultKey = false;
+                dom.apiKeyInput.value = state.userKey; // Show masked key usually, but here value
+                finishInitialization();
+            } else {
+                // B. No local key -> Try fetching default key
+                try {
+                    const defaultKey = await fetchDefaultApiKey();
+                    if (defaultKey) {
+                        state.apiKey = defaultKey;
+                        state.isUsingDefaultKey = true;
+                        // Don't fill input, let user know they are on default
+                        dom.apiKeyInput.placeholder = "กำลังใช้งาน Key เริ่มต้น (หรือกรอก Key ส่วนตัว)";
+                        finishInitialization();
+                    } else {
+                        // C. Fetch failed -> Go to settings
+                        hideLoadingOverlay();
+                        switchView('view-settings');
+                    }
+                } catch (e) {
+                    // C. Fetch error -> Go to settings
+                    console.error("Default Key Error:", e);
+                    hideLoadingOverlay();
+                    switchView('view-settings');
+                }
+            }
+        }
+
+        function finishInitialization() {
+             // [v5] Listeners
             dom.feedSearchForm.addEventListener('submit', handleManualFeedSearch);
             dom.saveKeyBtn.addEventListener('click', handleSaveKey);
             dom.chatForm.addEventListener('submit', handleChatSubmit);
@@ -704,7 +763,7 @@
             dom.nav.feed.addEventListener('click', () => switchView('view-feed'));
             dom.nav.chat.addEventListener('click', () => switchView('view-chat'));
             dom.nav.settings.addEventListener('click', () => switchView('view-settings'));
-            dom.nav.calculator.addEventListener('click', () => switchView('view-calculator')); // [FIX] Added
+            dom.nav.calculator.addEventListener('click', () => switchView('view-calculator')); 
             
             dom.chatInput.addEventListener('input', () => {
                 dom.chatInput.style.height = 'auto'; 
@@ -719,7 +778,6 @@
             
             // [FIX v5.11] Updated Calculator Listeners
             dom.aiProfileBtn.addEventListener('click', handleAiProfileExtract); 
-            // Removed old manual listeners: calcForm, saveProfileBtn, calcToPresent
             
             // [FIX] Add modal close listeners
             dom.modalCloseBtn.addEventListener('click', hideCalcModal);
@@ -736,16 +794,22 @@
             loadChatHistory();
             renderChatHistory();
 
-            // [v5] Check API Key and run auto-feed
+            // [v5] Auto run logic
+            hideLoadingOverlay();
             if (state.apiKey) {
                 switchView('view-feed');
-                // [FIX] Call both functions on load
-                runEducationNewsSearch(); // Call for edu news
-                runJobFeedSearch(DEFAULT_QUERY); // Call for job feed
+                runEducationNewsSearch(); 
+                runJobFeedSearch(DEFAULT_QUERY); 
             } else {
-                // Force user to settings if no key
                 switchView('view-settings');
             }
+        }
+
+        function hideLoadingOverlay() {
+            dom.loadingOverlay.style.opacity = '0';
+            setTimeout(() => {
+                dom.loadingOverlay.style.display = 'none';
+            }, 500);
         }
 
         // --- [v5] NAVIGATION ---
@@ -814,14 +878,29 @@
         }
 
         // --- API Key Persistence ---
-        function saveApiKey(key) {
-            localStorage.setItem('teacher_job_feed_api_key_v5', key);
+        // [FIX v5.12] Fetch default key from GAS
+        async function fetchDefaultApiKey() {
+            if (!GAS_API_URL) return null;
+            try {
+                const response = await fetch(GAS_API_URL);
+                if (!response.ok) return null;
+                const data = await response.json();
+                return data.key || data.apiKey || null;
+            } catch (e) {
+                console.warn("Could not fetch default API Key", e);
+                return null;
+            }
         }
-        function loadApiKey() {
+
+        function saveUserApiKey(key) {
+            localStorage.setItem('teacher_job_feed_api_key_v5', key);
+            state.userKey = key;
+        }
+        
+        function loadUserApiKey() {
             const key = localStorage.getItem('teacher_job_feed_api_key_v5');
             if (key) {
-                state.apiKey = key;
-                dom.apiKeyInput.value = key;
+                state.userKey = key;
             }
         }
         
@@ -830,16 +909,19 @@
             dom.settingsMessage.classList.add('hidden'); // Hide old messages
             const key = dom.apiKeyInput.value.trim();
             if (!key) {
+                // If clearing key, maybe they want to revert to default?
+                // For now, enforce key requirement if manually saving
                 showErrorState("กรุณากรอก API Key", 'view-settings');
                 return;
             }
             
             state.apiKey = key;
-            saveApiKey(key);
+            state.isUsingDefaultKey = false;
+            saveUserApiKey(key);
             
             // Show success message
             dom.saveKeyBtn.innerHTML = `<i class="fa-solid fa-check mr-2"></i> บันทึกแล้ว!`;
-            dom.saveKeyBtn.classList.add('!bg-green-500'); // Use ! to override tailwind specificity
+            dom.saveKeyBtn.classList.add('!bg-green-500'); 
             dom.saveKeyBtn.disabled = true;
 
             setTimeout(() => {
@@ -849,12 +931,9 @@
             }, 2500);
             
             // Auto-switch to feed and run search
-            // Delay switch slightly to let user see success
             setTimeout(() => {
-                // Only switch if we are still on settings page
                 if (state.currentView === 'view-settings') {
                     switchView('view-feed');
-                    // [FIX] Call both functions on save
                     runEducationNewsSearch(); 
                     runJobFeedSearch(DEFAULT_QUERY); 
                 }
